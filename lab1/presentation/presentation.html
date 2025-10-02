@@ -1,0 +1,109 @@
+\begin{frame}{Цель лабораторной работы}
+\phantomsection\label{ux446ux435ux43bux44c-ux43bux430ux431ux43eux440ux430ux442ux43eux440ux43dux43eux439-ux440ux430ux431ux43eux442ux44b}
+Показать этапы реализации атак и контрмер в сценарии компрометации
+научно-технической информации предприятия, определить уязвимости,
+продемонстрировать доказательства успешной эксплуатации и предложить
+практические способы устранения.
+\end{frame}
+
+\begin{frame}{Теоретическое введение}
+\phantomsection\label{ux442ux435ux43eux440ux435ux442ux438ux447ux435ux441ux43aux43eux435-ux432ux432ux435ux434ux435ux43dux438ux435}
+\textbf{Сценарий №5}
+
+Защита научно-технической информации предприятия. Внутренняя служба
+безопасности не смогла обнаружить в новом сотруднике специально
+подготовленного агента, который устроился в компанию для получения
+сведений, касающихся разработки новых насосных станций. Внутренний
+нарушитель проводит ряд успешных атак как на внутренних сотрудников
+компании, так и на сервера ЦОД. В результате он смог подключиться к
+внутренней базе данных и получить значения технических параметров работы
+новых насосных станций. Квалификация нарушителя высокая: он умеет
+использовать инструментарий для проведения атак, а также знает техники
+постэксплуатации.
+\end{frame}
+
+\begin{frame}{Ход выполнения лабораторной работы}
+\phantomsection\label{ux445ux43eux434-ux432ux44bux43fux43eux43bux43dux435ux43dux438ux44f-ux43bux430ux431ux43eux440ux430ux442ux43eux440ux43dux43eux439-ux440ux430ux431ux43eux442ux44b}
+\end{frame}
+
+\begin{frame}[fragile]{Уязвимости и последствия}
+\phantomsection\label{ux443ux44fux437ux432ux438ux43cux43eux441ux442ux438-ux438-ux43fux43eux441ux43bux435ux434ux441ux442ux432ux438ux44f}
+\begin{itemize}
+\item
+  \textbf{Уязвимость 1:} Слабый пароль учётной записи \texttt{dev1} ---
+  позволяет перебор словарём.\\
+  \textbf{Последствие 1:} Developer backdoor --- успешная загрузка и
+  исполнение вредоносного файла, установка задачи в планировщике и
+  Reverse Shell.
+\item
+  \textbf{Уязвимость 2:} Stored XSS в Redmine (CVE-2019-17427) ---
+  позволяет исполнить вредоносный код через textile-разметку wiki.\\
+  \textbf{Последствие 2:} Создание административного пользователя
+  Redmine и дальнейшее расширение привилегий.
+\item
+  \textbf{Уязвимость 3:} Blind SQL (CVE-2019-18890) --- позволяет
+  извлечь защищённые данные по-символьным запросам с измерением времени
+  ответа.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Уязвимость 1 --- слабый пароль}
+\phantomsection\label{ux443ux44fux437ux432ux438ux43cux43eux441ux442ux44c-1-ux441ux43bux430ux431ux44bux439-ux43fux430ux440ux43eux43bux44c}
+Для устранения уязвимости 1 мы сменили пароль у \texttt{dev1} на более
+сложный.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth,height=\textheight]{image/Screenshot_1.png}
+\caption{Изменение пароля}\label{fig:001}
+\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Решение последствия 1}
+\phantomsection\label{ux440ux435ux448ux435ux43dux438ux435-ux43fux43eux441ux43bux435ux434ux441ux442ux432ux438ux44f-1}
+Злоумышленник с помощью уязвимости добавил вредоносную нагрузку, которая
+создаёт задачу в Планировщике задач Windows для автозапуска
+\texttt{evil\ task}. Для устранения этого последствия мы удалили задачу.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.6\textwidth,height=\textheight]{image/Screenshot_2.png}
+\caption{Вредоносная нагрузка}\label{fig:002}
+\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Уязвимость 2 --- XSS атака}
+\phantomsection\label{ux443ux44fux437ux432ux438ux43cux43eux441ux442ux44c-2-xss-ux430ux442ux430ux43aux430}
+Для устранения уязвимости 2 мы нашли обработку текста wiki-страниц в
+коде Redmine и обнаружили строчки, где RedCloth преобразует
+textile-разметку в HTML. Мы удалили тег \texttt{pre} из списка
+разрешённых тегов. После внесения изменений была перезапущена служба
+веб-сервера.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.6\textwidth,height=\textheight]{image/Screenshot_8.png}
+\caption{Изменения в файле RedCloth}\label{fig:003}
+\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Решение последствий 2}
+\phantomsection\label{ux440ux435ux448ux435ux43dux438ux435-ux43fux43eux441ux43bux435ux434ux441ux442ux432ux438ux439-2}
+В консоли администратора Redmine злоумышленником был создан аккаунт
+\texttt{hacker}. Для устранения последствия мы удалили данный аккаунт.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.6\textwidth,height=\textheight]{image/Screenshot_3.png}
+\caption{Аккаунт злоумышленника}\label{fig:004}
+\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Уязвимость 3 --- Blind SQL}
+\phantomsection\label{ux443ux44fux437ux432ux438ux43cux43eux441ux442ux44c-3-blind-sql}
+Уязвимость связана с обработкой параметра \texttt{subproject\_id} в
+файле \texttt{query.rb}. Для исправления мы нашли участок кода,
+передающий значения непосредственно в объектный запрос без фильтрации,
+добавили фильтрацию входных значений и закомментировали небезопасный
+код. После изменений была перезапущена служба веб-сервера командой:
+\end{frame}
